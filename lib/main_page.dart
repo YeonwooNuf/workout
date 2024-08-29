@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'workout_selection_page.dart';
 import 'plan_selection_page.dart';
+import 'workout_selection_page.dart';
 
 class MainPage extends StatefulWidget {
   @override
   _MainPageState createState() => _MainPageState();
+
+  Map<String, String> selectedPlan;
+
+  MainPage({required this.selectedPlan});
 }
 
 class _MainPageState extends State<MainPage> {
@@ -12,13 +16,11 @@ class _MainPageState extends State<MainPage> {
   String selectedDay = 'Day 1';
   String selectedTime = '보통';
   String selectedCondition = '100%';
-
-  // 선택한 운동 부위를 저장하는 변수
-  String selectedWorkoutPart = '전신'; // 기본값을 전신으로 설정
-
-  String selectedPlan = '근육량 증가 추천 플랜 (입문)';
-
+  String selectedWorkoutPart = '전신';
+  String currentPlan = '근육량 증가 추천 플랜 (입문)';
   int totalCalories = 309;
+  int workoutCount = 5;
+  int setCount = 20;
 
   List<Map<String, dynamic>> workouts = [
     {'name': '운동1', 'calories': 50},
@@ -412,9 +414,11 @@ class _MainPageState extends State<MainPage> {
                   children: [
                     Expanded(
                       child: Text(
-                        '근육량 증가 추천 플랜 (3분할)', // 지금은 하드 코딩인데 플랜 설정함에 따라 값 바뀌어야 함
+                        '${widget.selectedPlan['plan'] ?? '기본 플랜'}', // null일 경우 기본 플랜.
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     TextButton(
@@ -422,21 +426,20 @@ class _MainPageState extends State<MainPage> {
                         final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => PlanSelectionPage()),
+                            builder: (context) => PlanSelectionPage(),
+                          ),
                         );
 
                         if (result != null) {
                           setState(() {
-                            selectedPlan = result['plan'];
-                            selectedDay = result['day'];
-                            workouts = List<Map<String, dynamic>>.from(
-                                result['workouts']);
-                            totalCalories = workouts.fold(0, (int sum, workout) => sum + (workout['calories'] as int));
+                            widget.selectedPlan = result;
                           });
                         }
                       },
-                      child:
-                          Text('플랜 더보기', style: TextStyle(color: Colors.blue)),
+                      child: Text(
+                        '플랜 더보기',
+                        style: TextStyle(color: Colors.blue),
+                      ),
                     ),
                   ],
                 ),
@@ -467,7 +470,7 @@ class _MainPageState extends State<MainPage> {
     return GestureDetector(
       onTap: _showDayBottomSheet,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(4),
@@ -487,7 +490,7 @@ class _MainPageState extends State<MainPage> {
     return GestureDetector(
       onTap: _showTimeBottomSheet,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(4),
@@ -507,7 +510,7 @@ class _MainPageState extends State<MainPage> {
     return GestureDetector(
       onTap: _showConditionBottomSheet,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(4),
@@ -575,9 +578,10 @@ class _MainPageState extends State<MainPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildInfoItem(Icons.fitness_center, '5개의 운동'),
-                _buildInfoItem(Icons.timer, '20세트'),
-                _buildInfoItem(Icons.local_fire_department, '309kcal'),
+                _buildInfoItem(Icons.fitness_center, '$workoutCount개의 운동'),
+                _buildInfoItem(Icons.timer, '$setCount세트'),
+                _buildInfoItem(
+                    Icons.local_fire_department, '$totalCalories kcal'),
               ],
             ),
             SizedBox(height: size.height * 0.04),

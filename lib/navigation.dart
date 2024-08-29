@@ -14,7 +14,7 @@ class _NavigationState extends State<Navigation> {
 
   // 각 페이지를 리스트로 저장
   final List<Widget> _pages = [
-    MainPage(),
+    MainPage(selectedPlan: {'plan': '기본 플랜'}),
     AnalysisPage(),
     CommunityPage(),
     ProfilePage(),

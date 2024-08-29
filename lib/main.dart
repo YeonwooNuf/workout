@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:workout/login_page.dart';
 import 'main_page.dart';
 import 'navigation.dart';
 
@@ -15,7 +16,7 @@ class WorkoutTrackerApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.dark,
       ),
-      home: Navigation(),
+      home: LoginPage(),
     );
   }
 }
