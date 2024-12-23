@@ -1,60 +1,70 @@
 import 'package:flutter/material.dart';
+import 'package:workout/widget/setting.dart';
 import 'plan_selection_page.dart';
 import 'workout_selection_page.dart';
+import 'setting_page.dart';
 
 class MainPage extends StatefulWidget {
+  Map<String, String> selectedPlan; // final 제거하여 수정 가능하게 변경
+  final String username;
+
+  MainPage({required this.selectedPlan, required this.username});
+
   @override
   _MainPageState createState() => _MainPageState();
-
-  Map<String, String> selectedPlan;
-
-  MainPage({required this.selectedPlan});
 }
 
 class _MainPageState extends State<MainPage> {
   // 선택된 값들을 저장하는 변수들
   String selectedDay = 'Day 1';
+  List<String> days = []; // days 목록을 여기에 선언합니다.
+
+  @override
+  void initState() {
+    super.initState();
+    _setDaysBasedOnPlan(); // 초기화 시 days 설정
+    _updateWorkoutPart(); // 초기화 시 운동 부위 설정
+  }
+
   String selectedTime = '보통';
   String selectedCondition = '100%';
-  String selectedWorkoutPart = '전신';
-  String currentPlan = '근육량 증가 추천 플랜 (입문)';
+  String selectedWorkoutPart = '';
+  // String currentPlan = '근육량 증가 추천 플랜 (입문)';
+
   int totalCalories = 309;
   int workoutCount = 5;
   int setCount = 20;
 
-  List<Map<String, dynamic>> workouts = [
-    {'name': '운동1', 'calories': 50},
-    {'name': '운동2', 'calories': 60},
-    {'name': '운동3', 'calories': 70},
-    {'name': '운동4', 'calories': 60},
-    {'name': '운동5', 'calories': 69},
-  ];
+  
+  final List<String> times = ['짧게', '조금 짧게', '보통', '조금 길게', '길게'];
+  final List<String> conditions = ['25%', '50%', '75%', '100%', '125%'];
 
-  // 추천 운동 설정에 사용될 옵션들
-  final List<String> days = [
-    'Day 1',
-    'Day 2',
-    'Day 3'
-  ]; // 사용자 선택 플랜에 따라 일 수가 바뀌어야 함(3분할이면 Day 3까지)
-  final List<String> times = [
-    '짧게',
-    '조금 짧게',
-    '보통',
-    '조금 길게',
-    '길게'
-  ]; // 운동 시간에 따라 운동 세트 수 및 종목 수 설정해야 함
-  final List<String> conditions = [
-    '25%',
-    '50%',
-    '75%',
-    '100%',
-    '125%'
-  ]; // 컨디션에 따라 무게 및 세트 수 설정해야 함
+  // 선택된 플랜에 따라 days 목록을 설정하는 메서드
+  void _setDaysBasedOnPlan() {
+    String? plan = widget.selectedPlan['plan'];
+    if (plan != null) {
+      if (plan.contains('초급')) {
+        days = ['Day 1', 'Day 2', 'Day 3'];
+        workoutCount = 6;
+      } else if (plan.contains('중급')) {
+        days = ['Day 1', 'Day 2', 'Day 3', 'Day 4'];
+        workoutCount = 6;
+      } else if (plan.contains('고급')) {
+        days = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'];
+        // if (days = ['Day 1', 'Day 2']) {
+
+        // }
+      } else {
+        days = ['Day 1']; // 기본값 설정
+      }
+      selectedDay = days.first; // 초기 선택을 첫 번째 Day로 설정
+    }
+    _updateWorkoutPart(); // days 변경 시 운동 부위 업데이트
+  }
 
   // 컨디션 선택을 위한 BottomSheet를 표시하는 메서드
   void _showConditionBottomSheet() {
-    String tempSelectedCondition =
-        selectedCondition; // 선택하기 눌러서 저장하기 전 일시적인 선택 상태
+    String tempSelectedCondition = selectedCondition;
 
     showModalBottomSheet(
       context: context,
@@ -294,6 +304,40 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
+  // 선택된 Day와 Plan에 따라 운동 부위를 업데이트
+  void _updateWorkoutPart() {
+    setState(() {
+      selectedWorkoutPart = _getWorkoutPartByDay(selectedDay);
+    });
+  }
+
+  // Day와 Plan에 따라 운동 부위를 반환
+  String _getWorkoutPartByDay(String day) {
+    String? plan = widget.selectedPlan['plan'];
+    if (plan != null) {
+      if (plan.contains('기본')) {
+        if (day == 'Day 1') return '가슴, 등, 어깨';
+      } else if (plan.contains('초급')) {
+        if (day == 'Day 1') return '가슴, 삼두';
+        if (day == 'Day 2') return '등, 이두';
+        if (day == 'Day 3') return '하체, 어깨';
+      } else if (plan.contains('중급')) {
+        if (day == 'Day 1') return '가슴, 삼두';
+        if (day == 'Day 2') return '등, 이두';
+        if (day == 'Day 3') return '어깨, 코어';
+        if (day == 'Day 4') return '하체, 코어';
+      } else if (plan.contains('고급')) {
+        if (day == 'Day 1') return '가슴';
+        if (day == 'Day 2') return '등';
+        if (day == 'Day 3') return '어깨';
+        if (day == 'Day 4') return '이두, 삼두';
+        if (day == 'Day 5') return '하체';
+      }
+    }
+    return '운동 부위 없음'; // 예외 처리
+  }
+
+  // Day 선택 BottomSheet
   void _showDayBottomSheet() {
     String tempSelectedDay = selectedDay;
 
@@ -317,7 +361,7 @@ class _MainPageState extends State<MainPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('운동 일',
+                        Text('운동 일 선택',
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
@@ -369,6 +413,7 @@ class _MainPageState extends State<MainPage> {
                       onPressed: () {
                         setState(() {
                           selectedDay = tempSelectedDay;
+                          _updateWorkoutPart(); // Day 선택 시 운동 부위 업데이트
                         });
                         Navigator.pop(context);
                       },
@@ -396,10 +441,7 @@ class _MainPageState extends State<MainPage> {
       appBar: AppBar(
         title: Text('헬스'),
         actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Icon(Icons.settings),
-          ),
+          SettingsIcon(username: widget.username), // 공통 설정 아이콘 추가
         ],
       ),
       body: SafeArea(
@@ -426,13 +468,15 @@ class _MainPageState extends State<MainPage> {
                         final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => PlanSelectionPage(),
+                            builder: (context) =>
+                                PlanSelectionPage(username: widget.username),
                           ),
                         );
 
                         if (result != null) {
                           setState(() {
                             widget.selectedPlan = result;
+                            _setDaysBasedOnPlan(); // 플랜 변경 시 days 업데이트
                           });
                         }
                       },
@@ -527,80 +571,85 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget _buildWorkoutInfoContainer(Size size) {
-    return GestureDetector(
-      onTap: () async {
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => WorkoutSelectionPage()),
-        );
-
-        if (result != null && result is String) {
-          setState(() {
-            selectedWorkoutPart = result;
-          });
-        }
-      },
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey[850],
-          borderRadius: BorderRadius.circular(10),
+  return GestureDetector(
+    onTap: () async {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WorkoutSelectionPage(
+            selectedPlan: widget.selectedPlan['plan'] ?? '기본 플랜',
+            selectedDay: selectedDay,
+            selectedTime: _getTimeDescription(selectedTime), // 선택된 시간을 전달
+          ),
         ),
-        child: Column(
-          children: [
-            // 운동 부위를 표시하는 텍스트 추가
-            Align(
-              alignment: Alignment.centerLeft,
-              child: RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: '운동 부위: ',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    TextSpan(
-                      text: selectedWorkoutPart,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: size.height * 0.04),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildInfoItem(Icons.fitness_center, '$workoutCount개의 운동'),
-                _buildInfoItem(Icons.timer, '$setCount세트'),
-                _buildInfoItem(
-                    Icons.local_fire_department, '$totalCalories kcal'),
-              ],
-            ),
-            SizedBox(height: size.height * 0.04),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                padding: EdgeInsets.symmetric(
-                  horizontal: size.width * 0.1,
-                  vertical: size.height * 0.02,
-                ),
-              ),
-              child: Text('추천 운동 시작하기', style: TextStyle(fontSize: 18)),
-            ),
-          ],
-        ),
+      );
+      if (result != null && result is String) {
+        setState(() {
+          selectedWorkoutPart = result;
+        });
+      }
+    },
+    child: Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[850],
+        borderRadius: BorderRadius.circular(10),
       ),
-    );
-  }
+      child: Column(
+        children: [
+          // 운동 부위를 표시하는 텍스트 추가
+          Align(
+            alignment: Alignment.centerLeft,
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: '운동 부위: ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  TextSpan(
+                    text: selectedWorkoutPart,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: size.height * 0.04),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildInfoItem(Icons.fitness_center, '$workoutCount개의 운동'),
+              _buildInfoItem(Icons.timer, '$setCount세트'),
+              _buildInfoItem(Icons.local_fire_department, '$totalCalories kcal'),
+            ],
+          ),
+          SizedBox(height: size.height * 0.04),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal,
+              padding: EdgeInsets.symmetric(
+                horizontal: size.width * 0.1,
+                vertical: size.height * 0.02,
+              ),
+            ),
+            child: Text('추천 운동 시작하기', style: TextStyle(fontSize: 18)),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 
   Widget _buildInfoItem(IconData icon, String text) {
     return Column(

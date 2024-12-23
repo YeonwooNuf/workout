@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:workout/pages/workout_report_page.dart';
+import 'package:workout/widget/setting.dart';
 
 class ProfilePage extends StatefulWidget {
+  final String username;
+
+  ProfilePage({super.key, required this.username});
+
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStateMixin {
+class _ProfilePageState extends State<ProfilePage>
+    with SingleTickerProviderStateMixin {
   DateTime selectedDate = DateTime.now();
   late TabController _tabController;
   List<DateTime> daysInMonth = [];
@@ -19,8 +26,10 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
 
   void _generateDaysInMonth() {
     daysInMonth.clear();
-    DateTime firstDayOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
-    int daysInMonthCount = DateTime(selectedDate.year, selectedDate.month + 1, 0).day;
+    DateTime firstDayOfMonth =
+        DateTime(selectedDate.year, selectedDate.month, 1);
+    int daysInMonthCount =
+        DateTime(selectedDate.year, selectedDate.month + 1, 0).day;
     int firstDayOfWeek = firstDayOfMonth.weekday;
 
     // 공백 맞추려면 firstDayOfWeek에서 더하거나 빼면됨
@@ -47,12 +56,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
         backgroundColor: Color(0xFF1C1C1E),
         title: Text('프로필', style: TextStyle(color: Colors.white)),
         actions: [
-          IconButton(
-            icon: Icon(Icons.settings, color: Colors.white),
-            onPressed: () {
-              // 설정 버튼 클릭 시 동작 추가
-            },
-          ),
+          SettingsIcon(username: widget.username), // 공통 설정 아이콘 추가
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -87,7 +91,13 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
           child: ElevatedButton(
             onPressed: () {
-              // 운동 기록 추가하는 동작 추가
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      WorkoutRecordPage(initialDate: selectedDate),
+                ),
+              );
             },
             child: Text('운동 기록 추가'),
             style: ElevatedButton.styleFrom(
@@ -117,7 +127,8 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             icon: Icon(Icons.arrow_back_ios, color: Colors.white),
             onPressed: () {
               setState(() {
-                selectedDate = DateTime(selectedDate.year, selectedDate.month - 1, selectedDate.day);
+                selectedDate = DateTime(selectedDate.year,
+                    selectedDate.month - 1, selectedDate.day);
                 _generateDaysInMonth();
               });
             },
@@ -130,7 +141,8 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             icon: Icon(Icons.arrow_forward_ios, color: Colors.white),
             onPressed: () {
               setState(() {
-                selectedDate = DateTime(selectedDate.year, selectedDate.month + 1, selectedDate.day);
+                selectedDate = DateTime(selectedDate.year,
+                    selectedDate.month + 1, selectedDate.day);
                 _generateDaysInMonth();
               });
             },
@@ -143,7 +155,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
               });
             },
             style: TextButton.styleFrom(
-              
               side: BorderSide(color: Colors.white), // 테두리 색상 설정
               padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               foregroundColor: Colors.white, // 글자 색상 설정
@@ -151,7 +162,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                 borderRadius: BorderRadius.circular(8.0), // 테두리의 각진 정도 설정
               ),
             ),
-            
             child: Text('오늘'),
           ),
         ],
@@ -166,11 +176,17 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: weekdays.map((day) {
+          Color dayColor = Colors.white;
+          if (day == '일') {
+            dayColor = Colors.red; // 일요일 빨간색
+          } else if (day == '토') {
+            dayColor = Colors.blue; // 토요일 파란색
+          }
           return Expanded(
             child: Center(
               child: Text(
                 day,
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(color: dayColor, fontWeight: FontWeight.bold),
               ),
             ),
           );
@@ -196,6 +212,14 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             daysInMonth[index].month == selectedDate.month &&
             daysInMonth[index].year == selectedDate.year;
 
+        // 요일 색상 설정
+        Color textColor = Colors.white;
+        if (daysInMonth[index].weekday == DateTime.sunday) {
+          textColor = Colors.red; // 일요일 빨간색
+        } else if (daysInMonth[index].weekday == DateTime.saturday) {
+          textColor = Colors.blue; // 토요일 파란색
+        }
+
         return GestureDetector(
           onTap: () {
             setState(() {
@@ -211,7 +235,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             child: Text(
               '${daysInMonth[index].day}',
               style: TextStyle(
-                color: Colors.white,
+                color: textColor,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
