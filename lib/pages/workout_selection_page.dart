@@ -33,7 +33,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage> {
   Future<void> fetchWorkouts() async {
     try {
       final response = await http
-          .get(Uri.parse('http://localhost:8080/api/workouts')); // 서버 URL 수정
+          .get(Uri.parse('http://10.0.2.2:8080/api/workouts')); // 서버 URL 수정
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
         setState(() {

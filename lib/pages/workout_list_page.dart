@@ -23,7 +23,7 @@ class _WorkoutListPageState extends State<WorkoutListPage> {
   // 운동 목록 가져오기
   Future<void> fetchWorkouts() async {
     final response = await http.get(
-        Uri.parse('http://localhost:8080/api/workouts')); // 여기를 서버 URL로 바꾸세요.
+        Uri.parse('http://10.0.2.2:8080/api/workouts')); // 여기를 서버 URL로 바꾸세요.
 
     if (response.statusCode == 200) {
       final List<dynamic> data =

@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 // 서버와 통신하기 위한 PlanService 클래스
 class PlanService {
   // 백엔드 서버 URL 대입 (플랜 관련 엔드포인트)
-  static const String _baseUrl = 'http://localhost:8080/api/plans';
+  static const String _baseUrl = 'http://10.0.2.2:8080/api/plans';
 
   // 모든 플랜 정보 조회 메서드
   Future<List<Map<String, dynamic>>> getAllPlans() async {

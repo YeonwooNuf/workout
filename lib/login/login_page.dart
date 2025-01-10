@@ -18,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8080/api/users/login'), // 백엔드 로그인 API 포인트
+        Uri.parse('http://10.0.2.2:8080/api/users/login'), // 백엔드 로그인 API 포인트
         headers: <String, String>{
           'Content-Type': 'application/json',
         },

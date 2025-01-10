@@ -50,7 +50,7 @@ class _AddWorkoutPageState extends State<AddWorkoutPage> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      var uri = Uri.parse('http://localhost:8080/api/workouts/add');
+      var uri = Uri.parse('http://10.0.2.2:8080/api/workouts/add');
       var request = http.MultipartRequest('POST', uri);
       request.fields['workoutName'] = _workoutName;
       request.fields['guide'] = _guide;

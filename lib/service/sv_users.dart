@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 // 서버와 통신하기 위한 클래스
 class UserService {
   // 백엔드 서버 URL 대입
-  static const String _baseUrl = 'http://localhost:8080/api/users';
+  static const String _baseUrl = 'http://10.0.2.2:8080/api/users';
 
   // 사용자 등록 메소드
   Future<String> registerUser({

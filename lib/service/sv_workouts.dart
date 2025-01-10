@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class WorkoutService {
-  static const String _baseUrl = 'http://localhost:8080/api/workouts';
+  static const String _baseUrl = 'http://10.0.2.2:8080/api/workouts';
 
   // 모든 운동 정보 조회 메서드
   Future<List<Map<String, dynamic>>> getAllWorkouts() async {
