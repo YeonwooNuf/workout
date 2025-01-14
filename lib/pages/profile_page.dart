@@ -1,11 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:workout/pages/workout_report_page.dart';
-import 'package:workout/widget/setting.dart';
+
+class Post {
+  final int id;
+  final String author;
+  final String content;
+  final String? imageUrl;
+
+  Post({required this.id, required this.author, required this.content, this.imageUrl});
+
+  factory Post.fromJson(Map<String, dynamic> json) {
+    return Post(
+      id: json['id'],
+      author: json['author'],
+      content: json['content'],
+      imageUrl: json['imageUrl'],
+    );
+  }
+}
 
 class ProfilePage extends StatefulWidget {
   final String username;
 
-  ProfilePage({super.key, required this.username});
+  ProfilePage({required this.username});
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -13,8 +32,8 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage>
     with SingleTickerProviderStateMixin {
-  DateTime selectedDate = DateTime.now();
   late TabController _tabController;
+  DateTime selectedDate = DateTime.now();
   List<DateTime> daysInMonth = [];
 
   @override
@@ -26,19 +45,36 @@ class _ProfilePageState extends State<ProfilePage>
 
   void _generateDaysInMonth() {
     daysInMonth.clear();
-    DateTime firstDayOfMonth =
-        DateTime(selectedDate.year, selectedDate.month, 1);
-    int daysInMonthCount =
-        DateTime(selectedDate.year, selectedDate.month + 1, 0).day;
+    DateTime firstDayOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
+    int daysInMonthCount = DateTime(selectedDate.year, selectedDate.month + 1, 0).day;
     int firstDayOfWeek = firstDayOfMonth.weekday;
 
-    // 공백 맞추려면 firstDayOfWeek에서 더하거나 빼면됨
     for (int i = 0; i < firstDayOfWeek; i++) {
       daysInMonth.add(DateTime(0));
     }
 
     for (int i = 0; i < daysInMonthCount; i++) {
       daysInMonth.add(DateTime(selectedDate.year, selectedDate.month, i + 1));
+    }
+  }
+
+  void _navigateToWorkoutRecordPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WorkoutRecordPage(initialDate: selectedDate),
+      ),
+    );
+  }
+
+  Future<List<Post>> fetchUserPosts(String username) async {
+    final response = await http.get(Uri.parse("http://10.0.2.2:8080/api/posts?author=$username"));
+    if (response.statusCode == 200) {
+      return (json.decode(response.body) as List)
+          .map((data) => Post.fromJson(data))
+          .toList();
+    } else {
+      throw Exception('Failed to load posts');
     }
   }
 
@@ -55,9 +91,6 @@ class _ProfilePageState extends State<ProfilePage>
       appBar: AppBar(
         backgroundColor: Color(0xFF1C1C1E),
         title: Text('프로필', style: TextStyle(color: Colors.white)),
-        actions: [
-          SettingsIcon(username: widget.username), // 공통 설정 아이콘 추가
-        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
@@ -90,15 +123,7 @@ class _ProfilePageState extends State<ProfilePage>
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
           child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      WorkoutRecordPage(initialDate: selectedDate),
-                ),
-              );
-            },
+            onPressed: _navigateToWorkoutRecordPage,
             child: Text('운동 기록 추가'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.grey[800],
@@ -112,8 +137,93 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildActivityTab() {
-    return Center(
-      child: Text('활동 탭 내용', style: TextStyle(color: Colors.white)),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 40,
+                backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+              ),
+              SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.username,
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '총 3일 운동 완료',
+                    style: TextStyle(color: Colors.yellow, fontSize: 14),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildStatBox('팔로워', '0'),
+              _buildStatBox('팔로잉', '0'),
+              ElevatedButton(
+                onPressed: () {},
+                child: Text('프로필 편집'),
+              )
+            ],
+          ),
+        ),
+        Expanded(
+          child: FutureBuilder<List<Post>>(
+            future: fetchUserPosts(widget.username),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('게시글이 없습니다.', style: TextStyle(color: Colors.white)));
+              }
+              return GridView.builder(
+                padding: EdgeInsets.all(16.0),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 8.0,
+                  mainAxisSpacing: 8.0,
+                ),
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) {
+                  final post = snapshot.data![index];
+                  return Container(
+                    color: Colors.grey[800],
+                    child: Column(
+                      children: [
+                        if (post.imageUrl != null)
+                          Expanded(
+                            child: Image.network(post.imageUrl!, fit: BoxFit.cover),
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            post.content,
+                            style: TextStyle(color: Colors.white),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -155,11 +265,11 @@ class _ProfilePageState extends State<ProfilePage>
               });
             },
             style: TextButton.styleFrom(
-              side: BorderSide(color: Colors.white), // 테두리 색상 설정
+              side: BorderSide(color: Colors.white),
               padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              foregroundColor: Colors.white, // 글자 색상 설정
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0), // 테두리의 각진 정도 설정
+                borderRadius: BorderRadius.circular(8.0),
               ),
             ),
             child: Text('오늘'),
@@ -178,9 +288,9 @@ class _ProfilePageState extends State<ProfilePage>
         children: weekdays.map((day) {
           Color dayColor = Colors.white;
           if (day == '일') {
-            dayColor = Colors.red; // 일요일 빨간색
+            dayColor = Colors.red;
           } else if (day == '토') {
-            dayColor = Colors.blue; // 토요일 파란색
+            dayColor = Colors.blue;
           }
           return Expanded(
             child: Center(
@@ -212,12 +322,11 @@ class _ProfilePageState extends State<ProfilePage>
             daysInMonth[index].month == selectedDate.month &&
             daysInMonth[index].year == selectedDate.year;
 
-        // 요일 색상 설정
         Color textColor = Colors.white;
         if (daysInMonth[index].weekday == DateTime.sunday) {
-          textColor = Colors.red; // 일요일 빨간색
+          textColor = Colors.red;
         } else if (daysInMonth[index].weekday == DateTime.saturday) {
-          textColor = Colors.blue; // 토요일 파란색
+          textColor = Colors.blue;
         }
 
         return GestureDetector(
@@ -242,6 +351,21 @@ class _ProfilePageState extends State<ProfilePage>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildStatBox(String label, String count) {
+    return Column(
+      children: [
+        Text(
+          count,
+          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          label,
+          style: TextStyle(color: Colors.grey, fontSize: 14),
+        ),
+      ],
     );
   }
 }

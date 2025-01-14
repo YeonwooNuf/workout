@@ -28,8 +28,8 @@ android {
     compileSdk = 34 // flutter.compileSdkVersion 대신 직접 설정
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     defaultConfig {
@@ -46,6 +46,16 @@ android {
         }
     }
 }
+
+kotlin {
+    jvmToolchain(17) // Kotlin의 JVM 타겟을 Java 17로 설정
+}
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
 
 flutter {
     source = "../.."
