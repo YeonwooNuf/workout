@@ -11,21 +11,11 @@ class Post {
   final String content;
   final String? imageUrl;
 
-  Post({
-    required this.id,
-    required this.author,
-    required this.content,
-    this.imageUrl,
-  });
+  Post({required this.id, required this.author, required this.content, this.imageUrl});
 
   factory Post.fromJson(Map<String, dynamic> json) {
-    String baseUrl = "http://10.0.2.2:8080";
-    String? imageUrl = json['postImageUrl'] != null
-        ? "$baseUrl${json['postImageUrl']}"
-        : null;
-
-    print("Decoded post: id=${json['postId']}, imageUrl=$imageUrl"); // 디버깅 로그 추가
-
+    String? imageUrl = json['postImageUrl'] != null ? "http://10.0.2.2:8080${json['postImageUrl']}" : null;
+    print("Post image URL: $imageUrl"); // 디버깅 로그 추가
     return Post(
       id: json['postId'],
       author: json['authorUsername'],
@@ -42,8 +32,8 @@ class CommunityPage extends StatefulWidget {
 
 class _CommunityPageState extends State<CommunityPage> {
   List<Post> posts = [];
-  final String currentUser = "1"; // 테스트 사용자 ID
-  final String baseUrl = "http://10.0.2.2:8080/api/posts";
+  final String currentUser = "current_user"; // 현재 사용자 이름
+  final String apiUrl = "http://10.0.2.2:8080/api/posts"; // API URL
 
   @override
   void initState() {
@@ -52,15 +42,15 @@ class _CommunityPageState extends State<CommunityPage> {
   }
 
   Future<void> fetchPosts() async {
-    final String url = "$baseUrl/$currentUser";
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse("http://10.0.2.2:8080/api/posts"));
       if (response.statusCode == 200) {
         setState(() {
           posts = (json.decode(response.body) as List)
               .map((data) => Post.fromJson(data))
               .toList();
         });
+        print("Fetched posts: $posts");
       } else {
         print("Failed to fetch posts: ${response.statusCode}");
       }
@@ -70,24 +60,20 @@ class _CommunityPageState extends State<CommunityPage> {
   }
 
   Future<void> createPost(String content, File? imageFile) async {
-    final String url = "$baseUrl/$currentUser";
     try {
-      var request = http.MultipartRequest('POST', Uri.parse(url));
+      var request = http.MultipartRequest(
+          'POST', Uri.parse("http://10.0.2.2:8080/api/posts/1")); // 1은 테스트용 userId
       request.fields['content'] = content;
       if (imageFile != null) {
-        request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+        request.files.add(
+            await http.MultipartFile.fromPath('image', imageFile.path));
       }
-
       var response = await request.send();
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final responseBody = await response.stream.bytesToString();
-        final jsonResponse = json.decode(responseBody);
-        setState(() {
-          posts.add(Post.fromJson(jsonResponse));
-        });
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Post created successfully");
+        fetchPosts();
       } else {
         print("Failed to create post: ${response.statusCode}");
-        print("Response: ${await response.stream.bytesToString()}");
       }
     } catch (e) {
       print("Error creating post: $e");
@@ -95,13 +81,11 @@ class _CommunityPageState extends State<CommunityPage> {
   }
 
   Future<void> deletePost(int id) async {
-    final String url = "$baseUrl/$id";
     try {
-      final response = await http.delete(Uri.parse(url));
+      final response = await http.delete(Uri.parse("$apiUrl/$id"));
       if (response.statusCode == 200) {
-        setState(() {
-          posts.removeWhere((post) => post.id == id);
-        });
+        print("Post deleted successfully: $id");
+        fetchPosts(); // 게시글 다시 로드
       } else {
         print("Failed to delete post: ${response.statusCode}");
       }
@@ -113,22 +97,16 @@ class _CommunityPageState extends State<CommunityPage> {
   void openPostCreationPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => PostCreationPage(
-          onPostCreated: (content, imageFile) {
-            createPost(content, imageFile);
-          },
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => PostCreationPage(onPostCreated: (content, imageFile) {
+        createPost(content, imageFile);
+      })),
     );
   }
 
   void openProfilePage() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => ProfilePage(username: currentUser),
-      ),
+      MaterialPageRoute(builder: (context) => ProfilePage(username: currentUser)),
     );
   }
 
@@ -161,9 +139,30 @@ class _CommunityPageState extends State<CommunityPage> {
             trailing: post.author == currentUser
                 ? IconButton(
               icon: Icon(Icons.delete),
-              onPressed: () {
-                deletePost(post.id);
-              },
+              onPressed: () => showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text("게시글 삭제"),
+                    content: Text("이 게시글을 삭제하시겠습니까?"),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text("취소"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          deletePost(post.id);
+                          Navigator.of(context).pop();
+                        },
+                        child: Text("삭제"),
+                      ),
+                    ],
+                  );
+                },
+              ),
             )
                 : null,
           );
