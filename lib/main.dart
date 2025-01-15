@@ -12,7 +12,7 @@ void main() {
 
 class WorkoutTrackerApp extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {  
+  Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: '운동 기록 어플',
