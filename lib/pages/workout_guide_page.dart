@@ -24,7 +24,7 @@ class WorkoutGuidePage extends StatelessWidget {
           children: [
             workoutImage.isNotEmpty
                 ? Image.network(
-                    'http://10.0.2.2' + workoutImage,
+                    'http://10.0.2.2:8080' + workoutImage,
                     width: double.infinity,
                     height: 180,
                     fit: BoxFit.contain,

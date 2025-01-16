@@ -200,7 +200,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage> {
                                       key: ValueKey(index),
                                       leading: workout['workoutImage'] != null
                                           ? Image.network(
-                                              'http://localhost:8080' +
+                                              'http://10.0.2.2:8080' +
                                                   workout['workoutImage'],
                                               width: 80,
                                               height: 80,
@@ -232,7 +232,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage> {
                             return ListTile(
                               leading: workout['workoutImage'] != null
                                   ? Image.network(
-                                      'http://localhost:8080' +
+                                      'http://10.0.2.2:8080' +
                                           workout['workoutImage'],
                                       width: 80,
                                       height: 80,

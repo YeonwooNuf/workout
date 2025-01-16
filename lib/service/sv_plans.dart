@@ -27,7 +27,7 @@ class PlanService {
 
   // 사용자별 선택된 플랜 조회 메서드
   Future<Map<String, dynamic>?> getSelectedPlan(String username) async {
-    final url = Uri.parse('http://localhost:8080/api/user-plans/$username'); // 사용자별 선택된 플랜 조회
+    final url = Uri.parse('http://10.0.2.2:8080/api/user-plans/$username'); // 사용자별 선택된 플랜 조회
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -40,7 +40,7 @@ class PlanService {
 
   // 플랜 선택 및 저장 메서드
   Future<String> selectPlan(String username, int planId) async {
-    final url = Uri.parse('http://localhost:8080/api/user-plans/$username/select?planId=$planId');
+    final url = Uri.parse('http://10.0.2.2:8080/api/user-plans/$username/select?planId=$planId');
     final response = await http.post(url);
 
     if (response.statusCode == 200) {

@@ -165,7 +165,7 @@ class _WorkoutListPageState extends State<WorkoutListPage> {
                                         height: 100, // 이미지의 원하는 높이 설정
                                         child: workout['workoutImage'] != null
                                             ? Image.network(
-                                                'http://localhost:8080' +
+                                                'http://10.0.2.2:8080' +
                                                     workout[
                                                         'workoutImage'], // 이미지 경로와 서버 URL을 합쳐서 완전한 경로로 만들기
                                                 fit: BoxFit

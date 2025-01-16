@@ -13,10 +13,10 @@ class Post {
 
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
-      id: json['id'],
-      author: json['author'],
-      content: json['content'],
-      imageUrl: json['imageUrl'],
+      id: json['postId'] ?? 0,
+      author: json['authorUsername'] ?? 'Unknown',
+      content: json['content'] ?? 'No content',
+      imageUrl: json['postImageUrl'], // Nullable 처리
     );
   }
 }
@@ -69,7 +69,10 @@ class _ProfilePageState extends State<ProfilePage>
 
   Future<List<Post>> fetchUserPosts(String username) async {
     final response = await http.get(Uri.parse("http://10.0.2.2:8080/api/posts?author=$username"));
+
     if (response.statusCode == 200) {
+      // JSON 응답 출력
+      print('Fetched JSON: ${response.body}');
       return (json.decode(response.body) as List)
           .map((data) => Post.fromJson(data))
           .toList();
@@ -205,7 +208,13 @@ class _ProfilePageState extends State<ProfilePage>
                       children: [
                         if (post.imageUrl != null)
                           Expanded(
-                            child: Image.network(post.imageUrl!, fit: BoxFit.cover),
+                            child: Image.network(
+                              'http://10.0.2.2:8080${post.imageUrl}', // 절대 경로로 변환
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(Icons.image_not_supported, color: Colors.white);
+                              },
+                            ),
                           ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
