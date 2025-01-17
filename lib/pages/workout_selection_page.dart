@@ -128,8 +128,13 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage> {
   // 셔플 로직
   void reorderWorkoutList(int oldIndex, int newIndex) {
     setState(() {
+      // newIndex가 oldIndex보다 크면 1 감소
       if (newIndex > oldIndex) newIndex -= 1;
+
+      // oldIndex 위치의 아이템을 리스트에서 제거
       final workout = recommendedWorkouts.removeAt(oldIndex);
+
+      // newIndex 위치에 아이템 삽입
       recommendedWorkouts.insert(newIndex, workout);
     });
   }
@@ -197,7 +202,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage> {
                               .map((index, workout) => MapEntry(
                                     index,
                                     ListTile(
-                                      key: ValueKey(index),
+                                    key: ValueKey(workout['workoutName']),
                                       leading: workout['workoutImage'] != null
                                           ? Image.network(
                                               'http://10.0.2.2:8080' +

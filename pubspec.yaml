@@ -68,6 +68,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
+    # 임시 플랜 이미지
     - assets/images/muscle_gain.jpg
     - assets/images/fat_loss.png
     - assets/images/fitnessIcon.png

@@ -73,6 +73,7 @@ class _ProfilePageState extends State<ProfilePage>
     if (response.statusCode == 200) {
       // JSON 응답 출력
       print('Fetched JSON: ${response.body}');
+
       return (json.decode(response.body) as List)
           .map((data) => Post.fromJson(data))
           .toList();
