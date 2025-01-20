@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:workout/pages/workout_report_page.dart';
 
 class Post {
+
+  // 작성자별 게시글 분리용 변수 (JSON 방식)
   final int id;
   final String author;
   final String content;
