@@ -202,7 +202,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage> {
                               .map((index, workout) => MapEntry(
                                     index,
                                     ListTile(
-                                    key: ValueKey(workout['workoutName']),
+                                      key: ValueKey(workout['workoutName']),
                                       leading: workout['workoutImage'] != null
                                           ? Image.network(
                                               'http://10.0.2.2:8080' +
@@ -224,6 +224,7 @@ class _WorkoutSelectionPageState extends State<WorkoutSelectionPage> {
                                         '세트 수 X 무게 X 반복횟수',
                                         style: TextStyle(fontSize: 14),
                                       ),
+                                      trailing: Icon(Icons.drag_handle),
                                     ),
                                   ))
                               .values
