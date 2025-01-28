@@ -59,126 +59,131 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // 배경색을 검은색으로 설정
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Image.asset(
-                'assets/images/fitnessIcon.png', // 로그인 화면 아이콘 이미지
-                height: 200,
-                fit: BoxFit.cover,
-              ),
-              SizedBox(height: 16),
-              // 어플 이름 추가
-              Text(
-                'PlanFit',
-                style: TextStyle(
-                  color: Colors.tealAccent,
-                  fontSize: 50,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 60),
-              // 아이디 입력란
-              TextFormField(
-                style: TextStyle(color: Colors.white), // 텍스트 입력 시 색상 설정
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey[850], // 텍스트 필드 배경색을 어두운 회색으로 설정
-                  labelText: '아이디',
-                  labelStyle: TextStyle(color: Colors.white54), // 라벨 색상 설정
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.teal), // 테두리 색상 설정
+      backgroundColor: Colors.black,
+      body: SingleChildScrollView( // 스크롤 가능하도록 감쌈
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                SizedBox(height: 60), // 키보드 올라올 때를 대비한 여백
+                Container(
+                  constraints: BoxConstraints(
+                    maxHeight: 200, // 최대 높이 설정
+                    maxWidth: double.infinity, // 가로는 화면 전체에 맞춤
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.teal),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.tealAccent),
-                  ),
-                  prefixIcon: Icon(Icons.person, color: Colors.white54),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '아이디를 입력해주세요';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _username = value!,
-              ),
-              SizedBox(height: 25),
-              // 비밀번호 입력란
-              TextFormField(
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey[850],
-                  labelText: '비밀번호',
-                  labelStyle: TextStyle(color: Colors.white54),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.teal),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.teal),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.tealAccent),
-                  ),
-                  prefixIcon: Icon(Icons.lock, color: Colors.white54),
-                ),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '비밀번호를 입력해주세요';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _password = value!,
-              ),
-              SizedBox(height: 30),
-              // 로그인 버튼
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    _login();
-                  }
-                },
-                child: Text('로그인', style: TextStyle(color: Colors.white)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal, // 버튼 배경색 설정
-                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  textStyle: TextStyle(fontSize: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    'assets/images/fitnessIcon.png',
+                    fit: BoxFit.contain, // 이미지 비율 유지
                   ),
                 ),
-              ),
-              SizedBox(height: 10),
-              // 회원가입 버튼
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => SignupPage()), // 회원가입 페이지로 이동
-                  );
-                },
-                child: Text(
-                  "회원가입",
-                  style: TextStyle(color: Colors.tealAccent), // 텍스트 버튼 색상 설정
+                SizedBox(height: 16),
+                Text(
+                  'PlanFit',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.tealAccent,
+                    fontSize: 50,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              SizedBox(height: 50),
-            ],
+                SizedBox(height: 40),
+                TextFormField(
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.grey[850],
+                    labelText: '아이디',
+                    labelStyle: TextStyle(color: Colors.white54),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.teal),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.teal),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.tealAccent),
+                    ),
+                    prefixIcon: Icon(Icons.person, color: Colors.white54),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '아이디를 입력해주세요';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) => _username = value!,
+                ),
+                SizedBox(height: 25),
+                TextFormField(
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.grey[850],
+                    labelText: '비밀번호',
+                    labelStyle: TextStyle(color: Colors.white54),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.teal),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.teal),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Colors.tealAccent),
+                    ),
+                    prefixIcon: Icon(Icons.lock, color: Colors.white54),
+                  ),
+                  obscureText: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '비밀번호를 입력해주세요';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) => _password = value!,
+                ),
+                SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      _login();
+                    }
+                  },
+                  child: Text('로그인', style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    textStyle: TextStyle(fontSize: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => SignupPage()),
+                    );
+                  },
+                  child: Text(
+                    "회원가입",
+                    style: TextStyle(color: Colors.tealAccent),
+                  ),
+                ),
+                SizedBox(height: 50),
+              ],
+            ),
           ),
         ),
       ),
