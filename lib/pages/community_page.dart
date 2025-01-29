@@ -1,31 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:io';
-import 'package:shared_preferences/shared_preferences.dart'; // SharedPreferences import
+
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:workout/pages/profile_page.dart';
+import 'dart:convert';
 import 'posting_page.dart';
-import 'profile_page.dart';
-
-class Post {
-  final int id;
-  final String author;
-  final String content;
-  final String? imageUrl;
-
-  Post({required this.id, required this.author, required this.content, this.imageUrl});
-
-  factory Post.fromJson(Map<String, dynamic> json) {
-    String? imageUrl = json['postImageUrl'] != null
-        ? "http://10.0.2.2:8080${json['postImageUrl']}"
-        : null;
-    return Post(
-      id: json['postId'],
-      author: json['authorUsername'],
-      content: json['content'],
-      imageUrl: imageUrl,
-    );
-  }
-}
 
 class CommunityPage extends StatefulWidget {
   @override
@@ -34,20 +14,20 @@ class CommunityPage extends StatefulWidget {
 
 class _CommunityPageState extends State<CommunityPage> {
   List<Post> posts = [];
-  String? currentUser; // 로그인한 사용자 이름
+  String? currentUser;
   final String apiUrl = "http://10.0.2.2:8080/api/posts";
 
   @override
   void initState() {
     super.initState();
-    fetchCurrentUser(); // 현재 사용자 정보 로드
-    fetchPosts(); // 게시글 로드
+    fetchCurrentUser();
+    fetchPosts();
   }
 
   Future<void> fetchCurrentUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      currentUser = prefs.getString('loggedInUsername'); // 저장된 사용자 이름 가져오기
+      currentUser = prefs.getString('loggedInUsername');
     });
   }
 
@@ -68,12 +48,43 @@ class _CommunityPageState extends State<CommunityPage> {
     }
   }
 
+  Future<void> uploadPost(String content, File? imageFile) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt('loggedInUserId'); // ✅ userId 가져오기
+
+    if (userId == null) {
+      print("🚨 Error: User ID not found. Please log in again.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("로그인이 필요합니다. 다시 로그인해주세요.")),
+      );
+      return;
+    }
+
+    var uri = Uri.parse("http://10.0.2.2:8080/api/posts/$userId");
+    var request = http.MultipartRequest("POST", uri);
+
+    request.fields['content'] = content;
+    if (imageFile != null) {
+      request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+    }
+
+    try {
+      final response = await request.send();
+      if (response.statusCode == 200) {
+        print("✅ 게시글 업로드 성공!");
+      } else {
+        print("🚨 게시글 업로드 실패: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("🚨 Error uploading post: $e");
+    }
+  }
+
   Future<void> deletePost(int id) async {
     try {
       final response = await http.delete(Uri.parse("$apiUrl/$id"));
       if (response.statusCode == 200) {
-        print("Post deleted successfully: $id");
-        fetchPosts(); // 게시글 다시 로드
+        fetchPosts();
       } else {
         print("Failed to delete post: ${response.statusCode}");
       }
@@ -113,10 +124,10 @@ class _CommunityPageState extends State<CommunityPage> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.black87,
-                      borderRadius: BorderRadius.circular(12.0),
+                      borderRadius: BorderRadius.circular(6.0),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
+                          color: Colors.white38,
                           spreadRadius: 2,
                           blurRadius: 5,
                           offset: Offset(0, 3),
@@ -131,62 +142,25 @@ class _CommunityPageState extends State<CommunityPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                "작성자: ${post.author}",
-                                style: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: 14.0,
-                                ),
-                              ),
+                              Text("작성자: ${post.author}", style: TextStyle(color: Colors.grey[500], fontSize: 14.0)),
                               if (post.author == currentUser)
                                 IconButton(
                                   icon: Icon(Icons.delete, color: Colors.white30),
-                                  onPressed: () => showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: Text("게시글 삭제"),
-                                        content: Text("이 게시글을 삭제하시겠습니까?"),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: Text("취소"),
-                                          ),
-                                          TextButton(
-                                            onPressed: () {
-                                              deletePost(post.id);
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: Text("삭제"),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
+                                  onPressed: () => deletePost(post.id),
                                 ),
                             ],
                           ),
                           SizedBox(height: 8.0),
-                          Text(
-                            post.content,
-                            style: TextStyle(
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 10.0),
+                          Text(post.content, style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
                           if (post.imageUrl != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: Image.network(
-                                post.imageUrl!,
-                                fit: BoxFit.cover,
-                                height: 200, // 이미지 최대 높이 설정
-                              ),
-                            ),
-                          SizedBox(height: 4.0),
+                            Image.network(
+                              post.imageUrl!.startsWith("http")
+                                  ? post.imageUrl!
+                                  : "http://10.0.2.2:8080" + post.imageUrl!,
+                              height: 200,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Icon(Icons.error), // 오류 시 기본 아이콘 표시
+                            )
                         ],
                       ),
                     ),
@@ -198,16 +172,18 @@ class _CommunityPageState extends State<CommunityPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PostCreationPage(onPostCreated: (content, imageFile) {
-              fetchPosts(); // 새 게시글 생성 후 다시 로드
-            })),
+            MaterialPageRoute(
+              builder: (context) => PostCreationPage(onPostCreated: uploadPost),
+            ),
           );
+          fetchPosts(); // 새 게시글 업로드 후 목록 새로고침
         },
         child: Icon(Icons.add),
       ),
+
     );
   }
 }

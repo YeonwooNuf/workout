@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
+import 'package:http/http.dart' as http;
 
 class PostCreationPage extends StatefulWidget {
-  final Function(String content, File? imageFile) onPostCreated;
+  final Future<void> Function(String content, File? imageFile) onPostCreated;
 
   PostCreationPage({required this.onPostCreated});
 
@@ -14,6 +16,7 @@ class PostCreationPage extends StatefulWidget {
 class _PostCreationPageState extends State<PostCreationPage> {
   final TextEditingController _contentController = TextEditingController();
   File? _selectedImage;
+  bool _isUploading = false;
 
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -24,12 +27,41 @@ class _PostCreationPageState extends State<PostCreationPage> {
     }
   }
 
+  Future<int?> getUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('loggedInUserId');
+  }
+
+  Future<void> _handlePostCreation() async {
+    if (_contentController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("내용을 입력해주세요.")),
+      );
+      return;
+    }
+
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      await widget.onPostCreated(_contentController.text, _selectedImage);
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("게시글 업로드 실패: $e")),
+      );
+    } finally {
+      setState(() {
+        _isUploading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("게시물 올리기"),
-      ),
+      appBar: AppBar(title: Text("게시물 올리기")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -54,11 +86,8 @@ class _PostCreationPageState extends State<PostCreationPage> {
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                widget.onPostCreated(_contentController.text, _selectedImage);
-                Navigator.pop(context);
-              },
-              child: Text("완료"),
+              onPressed: _isUploading ? null : _handlePostCreation,
+              child: _isUploading ? CircularProgressIndicator() : Text("완료"),
             ),
           ],
         ),

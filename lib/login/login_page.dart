@@ -18,10 +18,8 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/api/users/login'), // 백엔드 로그인 API 포인트
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
+        Uri.parse('http://10.0.2.2:8080/api/users/login'),
+        headers: <String, String>{'Content-Type': 'application/json'},
         body: jsonEncode(<String, String>{
           'username': _username,
           'password': _password,
@@ -29,14 +27,15 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (response.statusCode == 200) {
-        // 사용자 이름을 SharedPreferences에 저장
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('loggedInUsername', _username);
+        var responseData = jsonDecode(response.body);
 
-        // 로그인 성공 시 username을 Navigation 위젯으로 전달 (Navigation에서 타 페이지로 전달)
+        await prefs.setInt('loggedInUserId', responseData['userId']); // ✅ userId 저장
+        await prefs.setString('loggedInUsername', responseData['username']); // ✅ username 저장
+
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => Navigation(username: _username), // 사용자 정보 전달
+            builder: (_) => Navigation(username: _username),
           ),
         );
       } else if (response.statusCode == 401) {
@@ -49,7 +48,6 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
-      // 네트워크 오류나 요청 실패 등
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('서버와의 통신 중 오류가 발생했습니다.')),
       );
