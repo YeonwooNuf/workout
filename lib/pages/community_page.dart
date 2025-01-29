@@ -121,49 +121,54 @@ class _CommunityPageState extends State<CommunityPage> {
                 final post = posts[index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black87,
-                      borderRadius: BorderRadius.circular(6.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.white38,
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: Offset(0, 3),
+                  child: Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          borderRadius: BorderRadius.circular(6.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white38,
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("작성자: ${post.author}", style: TextStyle(color: Colors.grey[500], fontSize: 14.0)),
-                              if (post.author == currentUser)
-                                IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.white30),
-                                  onPressed: () => deletePost(post.id),
-                                ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text("작성자: ${post.author}", style: TextStyle(color: Colors.grey[500], fontSize: 14.0)),
+                                  if (post.author == currentUser)
+                                    IconButton(
+                                      icon: Icon(Icons.delete, color: Colors.white30),
+                                      onPressed: () => deletePost(post.id),
+                                    ),
+                                ],
+                              ),
+                              SizedBox(height: 8.0),
+                              Text(post.content, style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+                              if (post.imageUrl != null)
+                                Image.network(
+                                  post.imageUrl!.startsWith("http")
+                                      ? post.imageUrl!
+                                      : "http://10.0.2.2:8080" + post.imageUrl!,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
+                                )
                             ],
                           ),
-                          SizedBox(height: 8.0),
-                          Text(post.content, style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
-                          if (post.imageUrl != null)
-                            Image.network(
-                              post.imageUrl!.startsWith("http")
-                                  ? post.imageUrl!
-                                  : "http://10.0.2.2:8080" + post.imageUrl!,
-                              height: 200,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Icon(Icons.error), // 오류 시 기본 아이콘 표시
-                            )
-                        ],
+                        ),
                       ),
-                    ),
+                      SizedBox(height: 30), // ✅ 글과 글 사이의 간격 조절
+                    ],
                   ),
                 );
               },
@@ -183,7 +188,6 @@ class _CommunityPageState extends State<CommunityPage> {
         },
         child: Icon(Icons.add),
       ),
-
     );
   }
 }
