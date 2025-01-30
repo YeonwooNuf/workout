@@ -79,6 +79,7 @@ class SettingsPage extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
+            // 사용자 아이디가 아닌 닉네임으로 바꿔야 함. ex) 프로필 페이지
             ListTile(
               title: Text('사용자 아이디'),
               subtitle: Text(username),

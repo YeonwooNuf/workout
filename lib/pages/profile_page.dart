@@ -157,6 +157,7 @@ class _ProfilePageState extends State<ProfilePage>
               SizedBox(width: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                // 사용자 아이디가 아닌 닉네임으로 바꿔야 함.
                 children: [
                   Text(
                     widget.username,
