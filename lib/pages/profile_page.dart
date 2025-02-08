@@ -4,8 +4,6 @@ import 'dart:convert';
 import 'package:workout/pages/workout_report_page.dart';
 
 class Post {
-
-  // 작성자별 게시글 분리용 변수 (JSON 방식)
   final int id;
   final String author;
   final String content;
@@ -18,22 +16,22 @@ class Post {
       id: json['postId'] ?? 0,
       author: json['authorUsername'] ?? 'Unknown',
       content: json['content'] ?? 'No content',
-      imageUrl: json['postImageUrl'], // Nullable 처리
+      imageUrl: json['postImageUrl'],
     );
   }
 }
 
 class ProfilePage extends StatefulWidget {
+  final int userId;
   final String username;
 
-  ProfilePage({required this.username});
+  ProfilePage({required this.userId, required this.username});
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage>
-    with SingleTickerProviderStateMixin {
+class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   DateTime selectedDate = DateTime.now();
   List<DateTime> daysInMonth = [];
@@ -69,13 +67,11 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  Future<List<Post>> fetchUserPosts(String username) async {
-    final response = await http.get(Uri.parse("http://10.0.2.2:8080/api/posts?author=$username"));
+  Future<List<Post>> fetchUserPosts(int userId) async {
+    final response = await http.get(Uri.parse("http://10.0.2.2:8080/api/posts/$userId"));
 
     if (response.statusCode == 200) {
-      // JSON 응답 출력
       print('Fetched JSON: ${response.body}');
-
       return (json.decode(response.body) as List)
           .map((data) => Post.fromJson(data))
           .toList();
@@ -123,9 +119,7 @@ class _ProfilePageState extends State<ProfilePage>
       children: [
         _buildDateNavigation(),
         _buildWeekdayHeaders(),
-        Expanded(
-          child: _buildCustomCalendar(),
-        ),
+        Expanded(child: _buildCustomCalendar()),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
           child: ElevatedButton(
@@ -157,7 +151,6 @@ class _ProfilePageState extends State<ProfilePage>
               SizedBox(width: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                // 사용자 아이디가 아닌 닉네임으로 바꿔야 함.
                 children: [
                   Text(
                     widget.username,
@@ -172,23 +165,9 @@ class _ProfilePageState extends State<ProfilePage>
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildStatBox('팔로워', '0'),
-              _buildStatBox('팔로잉', '0'),
-              ElevatedButton(
-                onPressed: () {},
-                child: Text('프로필 편집'),
-              )
-            ],
-          ),
-        ),
         Expanded(
           child: FutureBuilder<List<Post>>(
-            future: fetchUserPosts(widget.username),
+            future: fetchUserPosts(widget.userId),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
@@ -213,7 +192,7 @@ class _ProfilePageState extends State<ProfilePage>
                         if (post.imageUrl != null)
                           Expanded(
                             child: Image.network(
-                              post.imageUrl!,  // 이미 postImageUrl에 전체 URL이 포함되어 있음
+                              post.imageUrl!,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
                                 print('Image Load Error: $error');
@@ -251,8 +230,7 @@ class _ProfilePageState extends State<ProfilePage>
             icon: Icon(Icons.arrow_back_ios, color: Colors.white),
             onPressed: () {
               setState(() {
-                selectedDate = DateTime(selectedDate.year,
-                    selectedDate.month - 1, selectedDate.day);
+                selectedDate = DateTime(selectedDate.year, selectedDate.month - 1, selectedDate.day);
                 _generateDaysInMonth();
               });
             },
@@ -265,8 +243,7 @@ class _ProfilePageState extends State<ProfilePage>
             icon: Icon(Icons.arrow_forward_ios, color: Colors.white),
             onPressed: () {
               setState(() {
-                selectedDate = DateTime(selectedDate.year,
-                    selectedDate.month + 1, selectedDate.day);
+                selectedDate = DateTime(selectedDate.year, selectedDate.month + 1, selectedDate.day);
                 _generateDaysInMonth();
               });
             },
