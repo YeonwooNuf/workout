@@ -213,9 +213,10 @@ class _ProfilePageState extends State<ProfilePage>
                         if (post.imageUrl != null)
                           Expanded(
                             child: Image.network(
-                              'http://10.0.2.2:8080/${post.imageUrl}', // 절대 경로로 변환
+                              post.imageUrl!,  // 이미 postImageUrl에 전체 URL이 포함되어 있음
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
+                                print('Image Load Error: $error');
                                 return Icon(Icons.image_not_supported, color: Colors.white);
                               },
                             ),
