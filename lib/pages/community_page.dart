@@ -101,15 +101,25 @@ class _CommunityPageState extends State<CommunityPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.person),
-            onPressed: () {
-              if (currentUser != null) {
+            onPressed: () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              int? userId = prefs.getInt('loggedInUserId');  // ✅ userId 가져오기
+
+              if (currentUser != null && userId != null) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProfilePage(username: currentUser!)),
+                  MaterialPageRoute(
+                    builder: (context) => ProfilePage(userId: userId, username: currentUser!),  // ✅ userId 추가
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("로그인 정보가 없습니다. 다시 로그인해주세요.")),
                 );
               }
             },
           )
+
         ],
       ),
       body: Column(

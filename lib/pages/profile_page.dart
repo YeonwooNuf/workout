@@ -5,15 +5,17 @@ import 'package:workout/pages/workout_report_page.dart';
 
 class Post {
   final int id;
+  final int authorId;
   final String author;
   final String content;
   final String? imageUrl;
 
-  Post({required this.id, required this.author, required this.content, this.imageUrl});
+  Post({required this.id, required this.authorId, required this.author, required this.content, this.imageUrl});
 
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
       id: json['postId'] ?? 0,
+      authorId: json['authorId'] ?? 0,
       author: json['authorUsername'] ?? 'Unknown',
       content: json['content'] ?? 'No content',
       imageUrl: json['postImageUrl'],
@@ -35,12 +37,15 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
   late TabController _tabController;
   DateTime selectedDate = DateTime.now();
   List<DateTime> daysInMonth = [];
+  int followers = 0;
+  int following = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _generateDaysInMonth();
+    fetchFollowData();
   }
 
   void _generateDaysInMonth() {
@@ -67,13 +72,21 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
+  Future<void> fetchFollowData() async {
+    // 더미 데이터 사용 (백엔드 연동 시 API 호출로 대체)
+    setState(() {
+      followers = 120;  // 예시 팔로워 수
+      following = 80;   // 예시 팔로잉 수
+    });
+  }
+
   Future<List<Post>> fetchUserPosts(int userId) async {
     final response = await http.get(Uri.parse("http://10.0.2.2:8080/api/posts/$userId"));
 
     if (response.statusCode == 200) {
-      print('Fetched JSON: ${response.body}');
       return (json.decode(response.body) as List)
           .map((data) => Post.fromJson(data))
+          .where((post) => post.authorId == userId)
           .toList();
     } else {
       throw Exception('Failed to load posts');
@@ -161,10 +174,35 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     style: TextStyle(color: Colors.yellow, fontSize: 14),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
+        Divider(color: Colors.white54, thickness: 1),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text('팔로워', style: TextStyle(color: Colors.white)),
+                  Text('$followers', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              SizedBox(width: 140),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text('팔로잉', style: TextStyle(color: Colors.white)),
+                  Text('$following', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
+        ),
+        Divider(color: Colors.white54, thickness: 1),
         Expanded(
           child: FutureBuilder<List<Post>>(
             future: fetchUserPosts(widget.userId),

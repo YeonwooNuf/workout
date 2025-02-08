@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../pages/main_page.dart';
 import '../pages/analysis_page.dart';
 import '../pages/community_page.dart';
 import '../pages/profile_page.dart';
 
 class Navigation extends StatefulWidget {
-  final String username; // 사용자 이름을 전달받음
+  final String username;
 
   Navigation({required this.username});
 
@@ -15,20 +16,30 @@ class Navigation extends StatefulWidget {
 
 class _NavigationState extends State<Navigation> {
   int _selectedIndex = 0;
+  int? userId; // ✅ userId 변수 추가
 
-  // 각 페이지를 리스트로 저장
   late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
-    // 초기화할 때 username을 MainPage에 전달
-    _pages = [
-      MainPage(selectedPlan: {'plan': '기본 플랜'}, username: widget.username),
-      AnalysisPage(),
-      CommunityPage(),
-      ProfilePage(username: widget.username),
-    ];
+    fetchUserId();
+  }
+
+  Future<void> fetchUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userId = prefs.getInt('loggedInUserId'); // ✅ userId 가져오기
+      _pages = [
+        MainPage(selectedPlan: {'plan': '기본 플랜'}, username: widget.username),
+        AnalysisPage(),
+        CommunityPage(),
+        if (userId != null)
+          ProfilePage(userId: userId!, username: widget.username) // ✅ userId 전달
+        else
+          Center(child: CircularProgressIndicator()), // ✅ userId가 없으면 로딩 표시
+      ];
+    });
   }
 
   void _onItemTapped(int index) {
@@ -40,7 +51,9 @@ class _NavigationState extends State<Navigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex], // 선택된 페이지 표시
+      body: userId == null
+          ? Center(child: CircularProgressIndicator()) // ✅ userId가 없으면 로딩 표시
+          : _pages[_selectedIndex], // ✅ 페이지 표시
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
