@@ -139,9 +139,9 @@ class _CommunityPageState extends State<CommunityPage> {
                           borderRadius: BorderRadius.circular(6.0),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.white38,
-                              spreadRadius: 2,
-                              blurRadius: 5,
+                              color: Colors.white24,
+                              spreadRadius: 1,
+                              blurRadius: 3,
                               offset: Offset(0, 3),
                             ),
                           ],
