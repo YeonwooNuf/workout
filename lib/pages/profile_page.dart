@@ -180,7 +180,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
         ),
         Divider(color: Colors.white54, thickness: 1),
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          padding: const EdgeInsets.symmetric(vertical: 1.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
